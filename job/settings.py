@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-bwsw0alm!%xfnv$1h#15-qj8k5-&5*0h8=7n7)-o4dsa37#-(6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
@@ -99,7 +99,18 @@ DATABASES = {
     }
 }
 
+##  mysql database connectivity 
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',  
+        'NAME': 'job_portal',          
+        'USER': 'root',          
+        'PASSWORD': 'Mukesh@7260', 
+        'HOST': 'localhost',                   
+        'PORT': '3306',                       
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

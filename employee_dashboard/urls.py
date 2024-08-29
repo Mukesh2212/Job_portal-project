@@ -13,6 +13,7 @@ urlpatterns = [
     path("feedback-employer/", views.EmployerApiView.as_view(),name="feedback-employer"),
     path("whatapps-support-api/", views.EmployerApiView.as_view(),name="whatapps-support-api"),
     path("employer-schedule/", views.EmployerScheduleApiView.as_view(),name="employer-schedule"),
+    path("jsnondata/",views.export_data_as_json_text ,name="jsnondata"),
 
 
 ]
