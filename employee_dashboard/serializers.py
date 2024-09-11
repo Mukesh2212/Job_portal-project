@@ -16,3 +16,4 @@ class EmployerSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployerDashboard
         fields = ['select_date','select_time','problem_type','explain_the_problem']
+

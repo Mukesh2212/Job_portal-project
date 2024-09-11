@@ -191,9 +191,19 @@ RAZORPAY_KEY_SECRET = 'U93BHhDQvxRJOhAyia6mk6R8'
 # EMAIL_HOST_PASSWORD = 'Sohal@1234'  # Replace with your email password
 
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'hruday9.kumar@gmail.com'
+# EMAIL_HOST_PASSWORD = 'ntii uvkv srca mhzr'
+# EMAIL_USE_TLS = True
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'hruday9.kumar@gmail.com'
-EMAIL_HOST_PASSWORD = 'ntii uvkv srca mhzr'
+EMAIL_HOST_USER = 'mk2648054@gmail.com'
+EMAIL_HOST_PASSWORD = 'txpedjmbsaxlirki'
+DEFAULT_FROM_EMAIL = 'mk2648054@gmail.com'
 EMAIL_USE_TLS = True

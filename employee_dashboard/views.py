@@ -55,3 +55,5 @@ def export_data_as_json_text(request):
     with open('data.json','w') as file:
         json.dump(data,file)
     return JsonResponse({"message":"ok"})
+
+

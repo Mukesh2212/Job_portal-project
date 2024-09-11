@@ -1,9 +1,12 @@
 from django.urls import path
 from .views import *
+from accounts import views 
+
+
 
 urlpatterns = [
     path('register/', RegistrationView.as_view(), name='register'),
-    path('login/', login_view, name='login'),
+    path('login11/', login_view, name='login'),
     path('employer_signup/', EmployerSignUpView.as_view(), name='employer-signup'),
     path('employer_login/', EmployerLoginView.as_view(), name='employer-login'),
     path('myprofile/', MyProfileListCreateView.as_view(), name='profile-list-create'),
@@ -30,6 +33,13 @@ urlpatterns = [
     path('sendemailresetpassword/', SendPasswordResetEmailView.as_view(), name='sendemailresetpassword'),
     path('reset-password/<uid>/<token>/', UserPasswordResetView.as_view(), name='reset-password'),
     
+
+    ###########  forget password solved by mukesh ################
+    path('forgot-password/', views.ForgotPasswordView.as_view(), name='forgot_password'),
+    path('api/reset-password-confirm/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+
+
+
     path('sendemailresetpasswordemployeer/', SendPasswordResetEmailEmployeerView.as_view(), name='sendemailresetpasswordemployeer'),
     path('reset-passwordemployeer/<uid>/<token>/', UserPasswordResetEmployeerView.as_view(), name='reset-passwordemploeer'),
     path('edit-employermyprofile/<int:employer_id>/', EmployerProfileUpdateView.as_view(), name='edit-employermyprofile'),

@@ -14,7 +14,9 @@ urlpatterns = [
     path("whatapps-support-api/", views.EmployerApiView.as_view(),name="whatapps-support-api"),
     path("employer-schedule/", views.EmployerScheduleApiView.as_view(),name="employer-schedule"),
     path("jsnondata/",views.export_data_as_json_text ,name="jsnondata"),
+  
 
+ 
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

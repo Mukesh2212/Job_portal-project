@@ -104,7 +104,9 @@ class SendPasswordResetEmailSerializer(serializers.Serializer):
       print('Encoded UID', uid)
       token = PasswordResetTokenGenerator().make_token(user)
       print('Password Reset Token', token)
-      link = 'https://jobs.hola9.info/PasswordChange/'+uid+'/'+token
+      # link = 'https://jobadmin.hola9.com/PasswordChange/'+uid+'/'+token
+      link = 'http://127.0.0.1:8000/accounts/reset-password/'+uid+'/'+token
+
        
       # payload = {
       #     "toAddress":email,
