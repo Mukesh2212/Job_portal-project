@@ -5,6 +5,7 @@ from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeErr
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import requests
+from django.core.mail import send_mail
 # class CustomUserSerializer(serializers.ModelSerializer):
 #     terms_and_conditions = serializers.BooleanField(default=False)
 #     confirm_password = serializers.CharField(write_only=True)  # Add this line
@@ -327,3 +328,68 @@ class OTPSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTP
         fields = ('email', 'otp_code')
+
+
+
+
+############## Update employer registration  password 
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True, write_only=True)
+    confirm_new_password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, data):
+        new_password = data.get('new_password')
+        confirm_new_password = data.get('confirm_new_password')
+        if new_password != confirm_new_password:
+            raise serializers.ValidationError("New password and confirm password do not match.")
+        if len(new_password) < 8:
+            raise serializers.ValidationError("New password must be at least 8 characters long.")        
+        return data
+
+    def save(self,request):
+        user = EmployerRegistration.objects.get(email=request.data['email'])
+        try:
+            employer = user.email
+        except EmployerRegistration.DoesNotExist:
+            raise serializers.ValidationError("Employer registration not found for this user.")
+        if not user.is_authenticated:
+            raise serializers.ValidationError("User must be authenticated to change password.")
+        new_password = self.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
+        return employer
+
+
+###########  reset password of employer registration 
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    def validate_email(self, value):
+        try:
+            user = EmployerRegistration.objects.get(email=value)
+        except EmployerRegistration.DoesNotExist:
+            raise serializers.ValidationError("User with this email does not exist.")
+        return value 
+    
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True)
+    confirm_new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
+
+
+class OTPPasswordResetSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True)
+    confirm_new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data

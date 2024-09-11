@@ -36,8 +36,8 @@ urlpatterns = [
 
     ###########  forget password solved by mukesh ################
     path('forgot-password/', views.ForgotPasswordView.as_view(), name='forgot_password'),
-    path('api/reset-password-confirm/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-
+    # path('api/reset-password-confirm/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('PasswordChange/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 
 
     path('sendemailresetpasswordemployeer/', SendPasswordResetEmailEmployeerView.as_view(), name='sendemailresetpasswordemployeer'),
@@ -52,13 +52,19 @@ urlpatterns = [
     path('book-demo/<int:pk>/', BookDemoRetrieveUpdateDestroyAPIView.as_view(), name='book-demo-detail'),
     
     path('employersregistration/', EmployerRegistrationAPIView.as_view(), name='employer-registration'),
+    path('updatepasswordemp/', ChangePasswordAPIView.as_view(), name='change-password'),
+    path('restpwdemployer/', RstPwdEmployerAPIView.as_view(), name='restpwdemployer'),
+    # path('restpwdemployerconfirm/<uidb64>/<token>/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
+    # path('accounts/otp-password-reset/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='otp_password_reset'),
+    path('restpwdemployerconfirm/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='otp_password_reset'),
+    # path('restpwdemployerconfirm/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='restpwdemployerconfirm'),
 
     path('checkOTP/', checkOTP ),
     path('sendOTP/',otpGeneration),
     
     
-    path('send-otp/', SendOTP.as_view(), name='send_otp'),
-    path('verify-otp/', VerifyOTP.as_view(), name='verify_otp'),
+    path('email-send-otp/', SendOTP.as_view(), name='send_otp'),  ## for email otp send 
+    path('email-verify-otp/', VerifyOTP.as_view(), name='verify_otp'),  ## for email otp send 
     
 ]
 
