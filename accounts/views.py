@@ -651,7 +651,7 @@ class EmployerRegistrationAPIView(APIView):
 #                 user = CustomUser.objects.get(email=employer.email)  
 #                 token = default_token_generator.make_token(user)
 #                 uid = urlsafe_base64_encode(force_bytes(user.pk))
-#                 reset_url = f"http://127.0.0.1:8000/accounts/restpwdemployerconfirm/{uid}/"
+#                 reset_url = f"https://jobadmin.hola9.com/accounts/restpwdemployerconfirm/{uid}/"
 #                 otp = self.generate_otp()
 #                 cache.set(f"otp_{user.pk}", otp, timeout=200)  # Store OTP in cache for 15 minutes
 #                 email_message = f"Click the following link to reset your password: {reset_url}\nYour OTP is: {otp} (optional)."
@@ -687,7 +687,7 @@ class RstPwdEmployerAPIView(APIView):
                 cache.set(f"otp_{user.pk}", otp, timeout=900) 
                 email_message = f"Your OTP for resetting your password is: {otp}. It will expire in 5 minutes."                
                 send_mail(
-                    'Password Reset OTP for Employer Registration',
+                    'Password Reset OTP',
                     email_message,
                     'mk2648054@gmail.com',
                     [user.email],
@@ -700,47 +700,23 @@ class RstPwdEmployerAPIView(APIView):
                 return Response({'error': 'Associated user not found'}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class PasswordResetConfirmAPIView(APIView):
-#     def post(self, request, uidb64, token):
-#         serializer = PasswordResetConfirmSerializer(data=request.data)
-#         if serializer.is_valid():
-#             try:
-#                 uid = urlsafe_base64_decode(uidb64).decode()
-#                 user = get_object_or_404(CustomUser, pk=uid)
-#             except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
-#                 return Response({'error': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
+class PasswordResetConfirmAPIView(APIView):
+    def post(self, request, uidb64, token):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                uid = urlsafe_base64_decode(uidb64).decode()
+                user = get_object_or_404(CustomUser, pk=uid)
+            except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+                return Response({'error': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
 
-#             if default_token_generator.check_token(user, token):
-#                 user.set_password(serializer.validated_data['new_password'])
-#                 user.save()
-#                 return Response({'message': 'Password reset successful.'}, status=status.HTTP_200_OK)
-#             return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+            if default_token_generator.check_token(user, token):
+                user.set_password(serializer.validated_data['new_password'])
+                user.save()
+                return Response({'message': 'Password reset successful.'}, status=status.HTTP_200_OK)
+            return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
 
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class OTPPasswordResetAPIView(APIView):
-#     def post(self, request, uidb64):
-#         serializer = OTPPasswordResetSerializer(data=request.data)
-#         if serializer.is_valid():
-#             try:
-#                 uid = urlsafe_base64_decode(uidb64).decode()
-#                 user = CustomUser.objects.get(pk=uid)
-#                 stored_otp = cache.get(f"otp_{user.pk}")
-#                 input_otp = request.data.get('otp')
-#                 if stored_otp is None:
-#                     return Response({'error': 'OTP has expired or is invalid.'}, status=status.HTTP_400_BAD_REQUEST)
-#                 if str(stored_otp) != str(input_otp):
-#                     return Response({'error': 'Incorrect OTP.'}, status=status.HTTP_400_BAD_REQUEST)
-#                 user.set_password(serializer.validated_data['new_password'])
-#                 user.save()               
-#                 cache.delete(f"otp_{user.pk}")                
-#                 return Response({'message': 'Password reset successful.'}, status=status.HTTP_200_OK)
-#             except CustomUser.DoesNotExist:
-#                 return Response({'error': 'Invalid user.'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class OTPPasswordResetAPIView(APIView):
@@ -756,17 +732,44 @@ class OTPPasswordResetAPIView(APIView):
                     return Response({'error': 'OTP has expired or is invalid.'}, status=status.HTTP_400_BAD_REQUEST)
                 if str(stored_otp) != str(input_otp):
                     return Response({'error': 'Incorrect OTP.'}, status=status.HTTP_400_BAD_REQUEST)
-                new_password = request.data.get('new_password')
-                confirm_new_password = request.data.get('confirm_new_password')
-                if new_password != confirm_new_password:
-                    return Response({'error': 'Passwords do not match.'}, status=status.HTTP_400_BAD_REQUEST)
-                user.set_password(new_password)
-                user.save()
-                cache.delete(f"otp_{user.pk}")
+                user.set_password(serializer.validated_data['new_password'])
+                user.save()               
+                cache.delete(f"otp_{user.pk}")                
                 return Response({'message': 'Password reset successful.'}, status=status.HTTP_200_OK)
             except CustomUser.DoesNotExist:
                 return Response({'error': 'Invalid user.'}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# class OTPPasswordResetAPIView(APIView):
+#     def post(self, request, uidb64):
+#         serializer = OTPPasswordResetSerializer(data=request.data)
+#         if serializer.is_valid():
+#             try:
+#                 uid = urlsafe_base64_decode(uidb64).decode()
+#                 user = CustomUser.objects.get(pk=uid)
+#                 stored_otp = cache.get(f"otp_{user.pk}")
+#                 # stored_otp = cache.get(f"otp_{user.email}")
+#                 print(stored_otp,'*********************************')
+#                 input_otp = request.data.get('otp')
+#                 if stored_otp is None:
+#                     return Response({'error': 'OTP has expired or is invalid.'}, status=status.HTTP_400_BAD_REQUEST)
+#                 if str(stored_otp) != str(input_otp):
+#                     return Response({'error': 'Incorrect OTP.'}, status=status.HTTP_400_BAD_REQUEST)
+#                 new_password = request.data.get('new_password')
+#                 confirm_new_password = request.data.get('confirm_new_password')
+#                 if new_password != confirm_new_password:
+#                     return Response({'error': 'Passwords do not match.'}, status=status.HTTP_400_BAD_REQUEST)
+#                 user.set_password(new_password)
+#                 user.save()
+#                 cache.delete(f"otp_{user.pk}")
+#                 # cache.delete(f"otp_{user.email}")
+#                 return Response({'message': 'Password reset successful.'}, status=status.HTTP_200_OK)
+#             except CustomUser.DoesNotExist:
+#                 return Response({'error': 'Invalid user.'}, status=status.HTTP_400_BAD_REQUEST)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ################  update password of employer 
 

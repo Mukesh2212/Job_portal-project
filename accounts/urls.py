@@ -56,7 +56,7 @@ urlpatterns = [
     path('restpwdemployer/', RstPwdEmployerAPIView.as_view(), name='restpwdemployer'),
     # path('restpwdemployerconfirm/<uidb64>/<token>/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
     # path('accounts/otp-password-reset/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='otp_password_reset'),
-    path('restpwdemployerconfirm/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='otp_password_reset'),
+    path('restpwdemployerconfirm/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='restpwdemployerconfirm'),
     # path('restpwdemployerconfirm/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='restpwdemployerconfirm'),
 
     path('checkOTP/', checkOTP ),
