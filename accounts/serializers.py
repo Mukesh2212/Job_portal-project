@@ -393,3 +393,11 @@ class OTPPasswordResetSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_new_password']:
             raise serializers.ValidationError("Passwords do not match.")
         return data
+    
+
+
+
+class EmpMyProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmpMyProfile
+        fields = '__all__'

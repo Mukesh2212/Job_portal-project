@@ -24,7 +24,7 @@ class CustomUser(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    terms_and_conditions = models.BooleanField(default=False)
+    terms_and_conditions = models.BooleanField(default=False,blank=True,null=True)
 
 
     objects = CustomUserManager()
@@ -68,6 +68,33 @@ class MyProfile(models.Model):
     def __str__(self):
         return self.name
 
+
+
+
+class EmpMyProfile(models.Model):
+    GENDER_CHOICES = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('N', 'Non-Binary'),
+        ('O', 'Other'),
+    ]
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=13)
+    education = models.TextField()
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True)
+    current_ctc = models.CharField(max_length=100, blank=True, null=True)
+    experience = models.IntegerField(blank=True, null=True)
+    expected_ctc = models.CharField(max_length=100, blank=True, null=True)
+    preferred_location = models.CharField(max_length=100, blank=True, null=True)
+    currenet_location = models.CharField(max_length=100, blank=True, null=True) 
+    skill_set = models.TextField()
+    previours_employer = models.CharField(max_length=100, blank=True, null=True) 
+    current_employer = models.CharField(max_length=100, blank=True, null=True) 
+
+
+    def __str__(self):
+        return self.name
 
 class Course(models.Model):
     course_name = models.CharField(max_length=100)
@@ -212,8 +239,8 @@ class EmployerRegistration(models.Model):
     upload_document_1 = models.FileField(upload_to='documents/', null=True, blank=True)
     upload_document_2 = models.FileField(upload_to='documents/', null=True, blank=True)
     upload_document_3 = models.FileField(upload_to='documents/', null=True, blank=True)
-    company_pan_card = models.FileField(upload_to='pan_cards/')
-    phone_number = models.CharField(max_length=15)
+    comany_pan_card = models.FileField(upload_to='pan_cards/')
+    phonpe_number = models.CharField(max_length=15)
     contact_person_name = models.CharField(max_length=100)
     contact_person_phone_number = models.CharField(max_length=15)
 

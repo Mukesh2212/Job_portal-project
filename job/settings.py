@@ -42,10 +42,10 @@ INSTALLED_APPS = [
     'rest_framework',
     "accounts",
     "paymentapi",
-    'rest_framework.authtoken',
-    'djoser',
-    'razorpay', 
-    'employee_dashboard' ,
+    "rest_framework.authtoken",
+    "djoser",
+    "razorpay", 
+    "employee_dashboard",
 
    
 ]

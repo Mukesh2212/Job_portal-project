@@ -12,6 +12,8 @@ urlpatterns = [
     path('myprofile/', MyProfileListCreateView.as_view(), name='profile-list-create'),
     path('myprofile/<int:pk>/', UpdateMyProfileView.as_view(), name='update-user-profile'),
     path('edit-myprofile/<int:register_id>/', MyProfileUpdateView.as_view(), name='edit-myprofile'),
+    path('myempprofile/', EmpMyprofleApiview.as_view(), name='profile-create'),
+    path('myempprofile/<int:pk>/', EmpMyprofleApiview.as_view(), name='profile-detail'),  # To fetch a specific profile
     path('courses/', CourseList.as_view(), name='course-list'),
     path('courses/<int:pk>/', CourseDetail.as_view(), name='course-detail'),
     path('profile-highlighters/', ProfileHighlighterList.as_view(), name='profile-highlighter-list'),
@@ -36,8 +38,8 @@ urlpatterns = [
 
     ###########  forget password solved by mukesh ################
     path('forgot-password/', views.ForgotPasswordView.as_view(), name='forgot_password'),
-    # path('api/reset-password-confirm/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('PasswordChange/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('api/reset-password-confirm/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'), # use for local server 
+    # path('PasswordChange/<uidb64>/<token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'), # use for live server 
 
 
     path('sendemailresetpasswordemployeer/', SendPasswordResetEmailEmployeerView.as_view(), name='sendemailresetpasswordemployeer'),
@@ -52,8 +54,10 @@ urlpatterns = [
     path('book-demo/<int:pk>/', BookDemoRetrieveUpdateDestroyAPIView.as_view(), name='book-demo-detail'),
     
     path('employersregistration/', EmployerRegistrationAPIView.as_view(), name='employer-registration'),
+    path('loginemailusername/', LoginEmailAPIView.as_view(), name='login'),
     path('updatepasswordemp/', ChangePasswordAPIView.as_view(), name='change-password'),
     path('restpwdemployer/', RstPwdEmployerAPIView.as_view(), name='restpwdemployer'),
+    path('loginemailusername/', LoginEmialAPIView.as_view(), name='login'),
     # path('restpwdemployerconfirm/<uidb64>/<token>/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
     # path('accounts/otp-password-reset/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='otp_password_reset'),
     path('restpwdemployerconfirm/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='restpwdemployerconfirm'),
