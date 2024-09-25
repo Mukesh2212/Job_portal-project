@@ -48,7 +48,13 @@ class Employer(models.Model):
     password = models.CharField(max_length=128)  # Securely hash and store passwords
     terms_and_conditions = models.BooleanField(default=False)
 
-class MyProfile(models.Model):
+
+class EmailUsername(models.Model):
+    username = models.CharField(max_length=255)
+    passowrd = models.CharField(max_length=128) 
+    email = models.EmailField(unique=True)
+
+class MyProfile(models.Model):              #### employer dashboard
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
@@ -126,14 +132,16 @@ class BoostnowProfileForm(models.Model):
 
 class AdvancedJobSearch(models.Model):
     # pass
-    jobRole = models.CharField(max_length=100)  
-    jobType = models.CharField(max_length=100)  
-    minExp = models.CharField(max_length=100)
-    maxExp = models.CharField(max_length=100)  
-    minSal = models.CharField(max_length=100)
-    maxSal = models.CharField(max_length=100)
-    location = models.CharField(max_length=100)
-    industry = models.CharField(max_length=100)
+    jobRole = models.CharField(max_length=100,null=True,blank=True)  
+    jobType = models.CharField(max_length=100,null=True,blank=True)  
+    minExp = models.CharField(max_length=100,null=True,blank=True)
+    maxExp = models.CharField(max_length=100,null=True,blank=True)  
+    minSal = models.CharField(max_length=100,null=True,blank=True)
+    maxSal = models.CharField(max_length=100,null=True,blank=True)
+    location = models.CharField(max_length=100,null=True,blank=True)
+    industry = models.CharField(max_length=100,null=True,blank=True)
+    workMode = models.CharField(max_length=100,null=True,blank=True)
+    education = models.CharField(max_length=100,null=True,blank=True)
     
 
 
@@ -243,6 +251,7 @@ class EmployerRegistration(models.Model):
     phonpe_number = models.CharField(max_length=15)
     contact_person_name = models.CharField(max_length=100)
     contact_person_phone_number = models.CharField(max_length=15)
+    otp = models.CharField(max_length=6, blank=True, null=True) 
 
     def __str__(self):
         return self.company_name

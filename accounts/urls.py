@@ -1,12 +1,17 @@
 from django.urls import path
 from .views import *
 from accounts import views 
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 
 
 urlpatterns = [
     path('register/', RegistrationView.as_view(), name='register'),
     path('login11/', login_view, name='login'),
+    path('logout/<int:id>/', LogoutAPIView.as_view(), name='logout'),
     path('employer_signup/', EmployerSignUpView.as_view(), name='employer-signup'),
     path('employer_login/', EmployerLoginView.as_view(), name='employer-login'),
     path('myprofile/', MyProfileListCreateView.as_view(), name='profile-list-create'),
@@ -54,10 +59,14 @@ urlpatterns = [
     path('book-demo/<int:pk>/', BookDemoRetrieveUpdateDestroyAPIView.as_view(), name='book-demo-detail'),
     
     path('employersregistration/', EmployerRegistrationAPIView.as_view(), name='employer-registration'),
-    path('loginemailusername/', LoginEmailAPIView.as_view(), name='login'),
+    path('employregisteredprofile/', EmployerRegisteredProfileAPIView.as_view(), name='employer-registered-profile'),
+    path('employregisteredprofile/<int:id>/', EmployerRegisteredProfileAPIView.as_view(), name='employer-registered-profile'),
+    # path('loginemailusername/', LoginEmialAPIView.as_view(), name='login'),
+    path('loginemailusername/', LoginEmialAPIView.as_view(), name='loginemailusername'),
+    # path('loginemailusername/', LoginAPIViewEmail.as_view(), name='loginemailusername'),
     path('updatepasswordemp/', ChangePasswordAPIView.as_view(), name='change-password'),
     path('restpwdemployer/', RstPwdEmployerAPIView.as_view(), name='restpwdemployer'),
-    path('loginemailusername/', LoginEmialAPIView.as_view(), name='login'),
+
     # path('restpwdemployerconfirm/<uidb64>/<token>/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
     # path('accounts/otp-password-reset/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='otp_password_reset'),
     path('restpwdemployerconfirm/<uidb64>/', OTPPasswordResetAPIView.as_view(), name='restpwdemployerconfirm'),
@@ -69,6 +78,10 @@ urlpatterns = [
     
     path('email-send-otp/', SendOTP.as_view(), name='send_otp'),  ## for email otp send 
     path('email-verify-otp/', VerifyOTP.as_view(), name='verify_otp'),  ## for email otp send 
+
+
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
 ]
 

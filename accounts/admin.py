@@ -52,7 +52,7 @@ admin.site.register(EmployerRegistration)
 admin.site.register(OTPVerifiaction)
 admin.site.register(OTP)
 admin.site.register(EmpMyProfile)
-
+admin.site.register(EmailUsername)
 
 
 

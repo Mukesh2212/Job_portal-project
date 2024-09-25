@@ -5,57 +5,32 @@ from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeErr
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import requests
-from django.core.mail import send_mail
-# class CustomUserSerializer(serializers.ModelSerializer):
-#     terms_and_conditions = serializers.BooleanField(default=False)
-#     confirm_password = serializers.CharField(write_only=True)  # Add this line
+from django.core.mail import send_mail 
+from django.contrib.auth.models import User 
+from django.contrib.auth import authenticate 
 
-#     class Meta:
-#         model = CustomUser
-#         fields = ('id', 'email', 'full_name', 'password', 'terms_and_conditions', 'confirm_password')  # Include confirm_password
-#         extra_kwargs = {'password': {'write_only': True}}
 
-#     def create(self, validated_data):
-#         if validated_data['password'] != validated_data['confirm_password']:
-#             raise serializers.ValidationError("Password and Confirm Password must match")
-#         user = CustomUser(
-#             email=validated_data['email'],
-#             full_name=validated_data['full_name'],
-#             terms_and_conditions=validated_data.get('terms_and_conditions', False),
-#         )
-#         user.set_password(validated_data['password'])
-#         user.save()
-#         return user
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     terms_and_conditions = serializers.BooleanField(default=False)
-    confirm_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)  
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'full_name', 'password', 'terms_and_conditions', 'confirm_password')
+        fields = ('id', 'email', 'full_name', 'password', 'terms_and_conditions', 'confirm_password')  
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         if validated_data['password'] != validated_data['confirm_password']:
             raise serializers.ValidationError("Password and Confirm Password must match")
-        
-        # Create the user
-        user = CustomUser.objects.create_user(
+        user = CustomUser(
             email=validated_data['email'],
             full_name=validated_data['full_name'],
-            password=validated_data['password']
+            terms_and_conditions=validated_data.get('terms_and_conditions', False),
         )
-
-        # Automatically create MyProfile for the user
-        MyProfile.objects.create(
-            name=validated_data['full_name'],
-            email=validated_data['email'],
-            # start_date=datetime.date.today(), 
-            # phone='',  # You may set other default values
-            # Add other fields as needed for your MyProfile model
-        )
-
+        user.set_password(validated_data['password'])
+        user.save()
         return user
 
 
@@ -401,3 +376,26 @@ class EmpMyProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmpMyProfile
         fields = '__all__'
+
+
+class LoginSerializer(serializers.Serializer):
+   class Meta:
+      model = CustomUser 
+      fields = ['full_name','password']
+    
+
+
+class EmailLoginSerializer(serializers.Serializer):
+   class Meta:
+      model = EmailUsername
+      fields = "__all__" 
+   
+
+
+class LoginSerializerEmail(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+    class Meta:
+       moedel = CustomUser
+       fields = ['username','password']
+	

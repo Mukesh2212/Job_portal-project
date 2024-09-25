@@ -24,14 +24,15 @@ from django.core.cache import cache
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed
+from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RegistrationView(APIView):
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
-            if request.data.get('terms_and_conditions', False) is not True:
-                return Response({'terms_and_conditions': ['You must accept the terms and conditions.']}, status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -87,6 +88,25 @@ def login_view(request):
 #         else:
 #             return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, id=None):
+        try:
+            user = get_object_or_404(CustomUser, id=id)
+            if user.email != request.data.get('email'):
+                return Response({"error": "You are not authorized to logout this user"}, status=status.HTTP_403_FORBIDDEN)
+            refresh_token = request.data.get("refresh_token")
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+                return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Refresh token required"}, status=status.HTTP_400_BAD_REQUEST)   
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
 class EmployerSignUpView(APIView):
     def post(self, request):
         serializer = EmployerSignUpSerializer(data=request.data)
@@ -134,7 +154,6 @@ class EmpMyprofleApiview(APIView):
                 profile = EmpMyProfile.objects.get(pk=pk) 
             except EmpMyProfile.DoesNotExist:
                 return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
-            
             serializer = EmpMyProfileSerializer(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
@@ -255,7 +274,32 @@ class JobListCreateAPIView(APIView):
         jobs = Job.objects.all()
         serializer = JobSerializer(jobs, many=True)
         return Response(serializer.data)
+from django.contrib.auth import authenticate
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
+class LoginAPIView(APIView):
+
+    def post(self, request):
+        # Get username and password from request data
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        # Check if both fields are provided
+        if not username or not password:
+            return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Authenticate user
+        user = authenticate(username=username, password=password)
+
+        # Check if authentication was successful
+        if user is not None:
+            # Return a success response (e.g., with token or user details)
+            return Response({"message": "Login successful", "user_id": user.id, "username": user.username}, status=status.HTTP_200_OK)
+        else:
+            # Return error if authentication failed
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
     def post(self, request):
         serializer = JobSerializer(data=request.data)
         if serializer.is_valid():
@@ -373,28 +417,6 @@ class SendPasswordResetEmailView(APIView):
 # ####################################################### new code for reset password by mukesh ###################################
 
 
-class ForgotPasswordView(APIView):
-    def post(self, request):
-        email = request.data.get('email')
-        if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            user = CustomUser.objects.get(email=email)
-        except CustomUser.DoesNotExist:
-            return Response({'error': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        base_url = request.build_absolute_uri('/')  # Get the base URL
-        reset_url = f"{base_url}accounts/api/reset-password-confirm/{uid}/{token}/"
-        send_mail(
-            'Password Reset Request',
-            f'Click the link below to reset your password:\n{reset_url}',
-            'mk2648054@gmail.com',
-            [user.email],
-            fail_silently=False,
-        )
-        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
-    
 # class ForgotPasswordView(APIView):
 #     def post(self, request):
 #         email = request.data.get('email')
@@ -406,11 +428,8 @@ class ForgotPasswordView(APIView):
 #             return Response({'error': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
 #         token = default_token_generator.make_token(user)
 #         uid = urlsafe_base64_encode(force_bytes(user.pk))
-#         # base_url = 'https://jobadmin.hola9.com/accounts/'  # Set your desired base URL
-#         base_url = 'https://jobportal-42193.web.app/PasswordChange/'
-#         # reset_url = f"{base_url}api/reset-password-confirm/{uid}/{token}/"
-#         # reset_url = f"{base_url}PasswordChange/{uid}/{token}/"
-#         reset_url = f"{base_url}{uid}/{token}/"
+#         base_url = request.build_absolute_uri('/')  # Get the base URL
+#         reset_url = f"{base_url}accounts/api/reset-password-confirm/{uid}/{token}/"
 #         send_mail(
 #             'Password Reset Request',
 #             f'Click the link below to reset your password:\n{reset_url}',
@@ -419,6 +438,31 @@ class ForgotPasswordView(APIView):
 #             fail_silently=False,
 #         )
 #         return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+    
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'User with this email does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        # base_url = 'https://jobadmin.hola9.com/accounts/'  # Set your desired base URL
+        base_url = 'https://jobportal-42193.web.app/PasswordChange/'
+        # reset_url = f"{base_url}api/reset-password-confirm/{uid}/{token}/"
+        # reset_url = f"{base_url}PasswordChange/{uid}/{token}/"
+        reset_url = f"{base_url}{uid}/{token}/"
+        send_mail(
+            'Password Reset Request',
+            f'Click the link below to reset your password:\n{reset_url}',
+            'mk2648054@gmail.com',
+            [user.email],
+            fail_silently=False,
+        )
+        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
 
     
     
@@ -576,43 +620,170 @@ import secrets
 import string
 
 
-def generate_random_password(length=12):
-    alphabet = string.ascii_letters  # This includes both uppercase and lowercase letters
-    password = ''.join(random.choice(alphabet) for _ in range(length))
-    return password
+# def generate_random_password(length=12):
+#     alphabet = string.ascii_letters  # This includes both uppercase and lowercase letters
+#     password = ''.join(random.choice(alphabet) for _ in range(length))
+#     return password
+
+# class EmployerRegistrationAPIView(APIView):
+#     def get(self, request):
+#         employers = EmployerRegistration.objects.all()
+#         serializer = EmployerRegistrationSerializer(employers, many=True)
+#         return Response(serializer.data)
+
+#     def generate_random_password(length=8):
+#         """Generate a random password with letters and digits."""
+#         characters = string.ascii_letters + string.digits
+#         return ''.join(random.choice(characters) for _ in range(length))
+    
+
+#     def post(self, request):
+#         serializer = EmployerRegistrationSerializer(data=request.data)
+#         if serializer.is_valid():
+#             password = generate_random_password()
+#             first_name = request.data.get('first_name', '')
+#             last_name = request.data.get('last_name', '')
+#             random_digit = random.randint(000, 999)
+#             full_name = f"{first_name[:3]}{last_name[:3]}{random_digit}"
+#             user = CustomUser.objects.create_user(email=request.data['email'], password=password, full_name=full_name)
+#             employer_registration = serializer.save()
+#             email_message = f"Your login credentials:\nUsername: {user.full_name}\nPassword: {password}"
+#             send_mail(
+#                 'Login Credentials',
+#                 email_message,
+#                 'mk2648054@gmail.com',  
+#                 [request.data['email']],
+#                 fail_silently=False,
+#             )
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+### new code of employregistration 
+# def generate_random_password(length=12):
+#     alphabet = string.ascii_letters  # This includes both uppercase and lowercase letters
+#     password = ''.join(random.choice(alphabet) for _ in range(length))
+#     return password
+# class EmployerRegistrationAPIView(APIView):
+#     def get(self, request):
+#         employers = EmployerRegistration.objects.all()
+#         serializer = EmployerRegistrationSerializer(employers, many=True)
+#         return Response(serializer.data)
+    
+#     @staticmethod
+#     def generate_random_password(length=12):
+#         alphabet = string.ascii_letters 
+#         password1 = ''.join(random.choice(alphabet) for _ in range(length))
+#         return password1
+#     def post(self, request):
+#         serializer = EmployerRegistrationSerializer(data=request.data)
+#         if serializer.is_valid():
+#             password = self.generate_random_password()
+#             first_name = request.data.get('first_name', '')
+#             last_name = request.data.get('last_name', '')
+#             random_digit = random.randint(000, 999)
+#             full_name = f"{first_name[:3]}{last_name[:3]}{random_digit}"
+#             user = CustomUser.objects.create_user(email=request.data['email'], password=password, full_name=full_name)
+#             user.save()
+#             employer_registration = serializer.save()
+#             email_message = f"Your login credentials:\nUsername: {user.full_name}\nPassword: {password}"
+#             send_mail(
+#                 'Login Credentials',
+#                 email_message,
+#                 'mk2648054@gmail.com',  
+#                 [request.data['email']],
+#                 fail_silently=False,
+#             )
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
 
 class EmployerRegistrationAPIView(APIView):
     def get(self, request):
         employers = EmployerRegistration.objects.all()
         serializer = EmployerRegistrationSerializer(employers, many=True)
         return Response(serializer.data)
-
-    def generate_random_password(length=8):
-        """Generate a random password with letters and digits."""
-        characters = string.ascii_letters + string.digits
-        return ''.join(random.choice(characters) for _ in range(length))
     
+    @staticmethod
+    def generate_random_password(length=12):
+        alphabet = string.ascii_letters
+        password1 = ''.join(random.choice(alphabet) for _ in range(length))
+        return password1
 
     def post(self, request):
         serializer = EmployerRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            password = generate_random_password()
-            first_name = request.data.get('first_name', '')
-            last_name = request.data.get('last_name', '')
-            random_digit = random.randint(000, 999)
-            full_name = f"{first_name[:3]}{last_name[:3]}{random_digit}"
-            user = CustomUser.objects.create_user(email=request.data['email'], password=password, full_name=full_name)
+            password = self.generate_random_password()
+            email = request.data.get('email', '')
+            user = CustomUser.objects.create_user(email=email, password=password, full_name=email)
+            user.save()
             employer_registration = serializer.save()
             email_message = f"Your login credentials:\nUsername: {user.full_name}\nPassword: {password}"
             send_mail(
                 'Login Credentials',
                 email_message,
                 'mk2648054@gmail.com',  
-                [request.data['email']],
+                [email],                
                 fail_silently=False,
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+        
+class EmployerRegisteredProfileAPIView(APIView):
+    def get(self, request, id=None):
+        if id:
+            employer = get_object_or_404(EmployerRegistration, id=id)
+            otp = random.randint(100000, 999999)
+            employer.otp = otp
+            employer.save()
+            subject = 'otp for employee register profile'
+            message = f'Hello {employer.email},\n\nYour OTP code is: {otp}\n\nPlease use this code to proceed.'
+            from_email = 'mk2648054@gmail.com'
+            recipient_list = [employer.email] 
+            try:
+                send_mail(subject, message, from_email, recipient_list)
+            except Exception as e:
+                return Response({"error": f"Failed to send email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": f"OTP sent to {employer.email}"}, status=status.HTTP_200_OK)
+        else:
+            employers = EmployerRegistration.objects.all()
+            serializer = EmployerRegistrationSerializer(employers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    def put(self, request, id=None):
+        if id is None:
+            return Response({"error": "ID is required for updating an employer."}, status=status.HTTP_400_BAD_REQUEST)
+        employer = get_object_or_404(EmployerRegistration, id=id)
+        otp_from_request = request.data.get('otp')
+        if not otp_from_request:
+            return Response({"error": "OTP is required to update the employer."}, status=status.HTTP_400_BAD_REQUEST)
+        if otp_from_request != employer.otp:
+            return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = EmployerRegistrationSerializer(employer, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class LoginAPIViewEmail(APIView):
+#     def post(self, request):
+#         serializer = LoginSerializerEmail(data=request.data)
+#         if serializer.is_valid():
+#             username = serializer.validated_data['username']
+#             password = serializer.validated_data['password']
+#             user = authenticate(request , username=username, password=password)
+#             if user is  None:
+#                 return Response({
+#                     "message": "Login successful",
+#                 }, status=status.HTTP_200_OK)
+#             else:
+#                 return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class LoginEmialAPIView(APIView):
     def post(self, request):
@@ -629,65 +800,18 @@ class LoginEmialAPIView(APIView):
             raise AuthenticationFailed('Invalid credentials')
 
 
-
-
-# class LoginEmailAPIView(APIView):
+# class LoginEmailsAPIView(APIView):
 #     def post(self, request):
-#         # Extract username and password from the request data
-#         username = request.data.get('username')
-#         print(username,'*****************')
-#         password = request.data.get('password')
-#         print(password,'&&&&&&&&&&&&&&&&&&&&&&&&')
-#         # Authenticate the user
-#         user = authenticate(request, username=username, password=password)
-
-#         if user is not None:
-#             # Generate or get a token for the user
+#         serializer = EmailLoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             # user = serializer.validated_data
+#             # login(request, user)
 #             # token, created = Token.objects.get_or_create(user=user)
-
-#             # Return the token and a success message in the response
 #             return Response({
-#                 'message': 'Login successful',
-#                 # 'token': token.key
+#                 # "token": token.key,
+#                 "message": "Login successful."
 #             }, status=status.HTTP_200_OK)
-#         else:
-#             # Raise an authentication error if credentials are invalid
-#             raise AuthenticationFailed('Invalid credentials')
-
-
-from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
-
-class LoginEmailAPIView(APIView):
-    def post(self, request):
-        # Extract email and password from the request data
-        email = request.data.get('email')
-        password = request.data.get('password')
-
-        # Print for debugging
-        print(email, '*****************')
-        print(password, '&&&&&&&&&&&&&&&&&&&&&&&&')
-
-        # Validate input
-        if not email or not password:
-            return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Authenticate the user manually
-        UserModel = get_user_model()
-        try:
-            user = UserModel.objects.get(email=email)
-            if user.check_password(password):
-                # Authentication successful
-                return Response({
-                    'message': 'Login successful'
-                }, status=status.HTTP_200_OK)
-            else:
-                # Password incorrect
-                raise AuthenticationFailed('Invalid credentials')
-        except UserModel.DoesNotExist:
-            # User with the given email does not exist
-            raise AuthenticationFailed('Invalid credentials')
-
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # class RstPwdEmployerAPIView(APIView):
 #     def post(self, request):
@@ -894,7 +1018,6 @@ def otpGeneration(request):
     headers = {
     'cache-control': "no-cache"
     }
-
     response = requests.request("GET", url, headers=headers, params=querystring)
     print("start")
     print(response.text)
@@ -920,7 +1043,6 @@ def checkOTP(request):
         data.is_verfied = True
         data.save()
         return Response({"status": True})
-
     else:
         return Response({"status": False})
     
