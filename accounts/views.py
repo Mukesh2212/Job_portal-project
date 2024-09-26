@@ -27,7 +27,31 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import NotFound
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from django.db.models import Q
 
+class AdvancedsJobSearchAPIView(APIView):
+    def get(self, request):
+        job_type = request.query_params.get('jobType')
+        job_role = request.query_params.get('jobRole')
+        company_name = request.query_params.get('companyName')
+        company_type = request.query_params.get('companyType')
+        industry = request.query_params.get('industry')
+        queryset = AdvancedJobSearch.objects.all()
+        if job_type:
+            queryset = queryset.filter(jobType__icontains=job_type)
+        if job_role:
+            queryset = queryset.filter(jobRole__icontains=job_role)
+        if company_name:
+            queryset = queryset.filter(companyName__icontains=company_name)
+        if company_type:
+            queryset = queryset.filter(companyType__icontains=company_type)
+        if industry:
+            queryset = queryset.filter(industry__icontains=industry)
+        serializer = AdvancedJobSearchSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class RegistrationView(APIView):
     def post(self, request):
@@ -265,8 +289,13 @@ class BoostnowProfileFormDetail(generics.RetrieveUpdateDestroyAPIView):
 class AdvancedJobSearchDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = AdvancedJobSearch.objects.all()
     serializer_class = AdvancedJobSearchSerializer
+    # filter_backends = [DjangoFilterBackend, SearchFilter]
     
+    # # Specify the fields you want to filter on
+    # filterset_fields = ['companyType', 'companyName', 'jobRole', 'jobType', 'industry']
 
+    # # Specify the fields you want to be searchable
+    # search_fields = ['companyType', 'companyName', 'jobRole', 'jobType', 'industry']
 
 
 class JobListCreateAPIView(APIView):
@@ -1105,3 +1134,23 @@ class VerifyOTP(APIView):
         return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
 
 
+
+
+class JobApplyView(APIView):
+    def get(self, request, id=None):
+        if id is not None:
+            try:
+                job = Job.objects.get(id=id)
+                jobserializer = JobSerializer(job)
+                profile = MyProfile.objects.get(id=id)
+                proserializer = MyProfileSerializer(profile)
+                combined_data = {
+                    'job': jobserializer.data,
+                    'profile': proserializer.data
+                }
+                return Response(combined_data, status=status.HTTP_200_OK)
+            except Job.DoesNotExist:
+                raise NotFound({'detail': 'Job not found.'})
+            except MyProfile.DoesNotExist:
+                raise NotFound({'detail': 'Profile not found.'})
+       

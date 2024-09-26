@@ -142,6 +142,8 @@ class AdvancedJobSearch(models.Model):
     industry = models.CharField(max_length=100,null=True,blank=True)
     workMode = models.CharField(max_length=100,null=True,blank=True)
     education = models.CharField(max_length=100,null=True,blank=True)
+    companyType = models.CharField(max_length=100,null=True,blank=True)
+    companyName = models.CharField(max_length=100,null=True,blank=True)
     
 
 

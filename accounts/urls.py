@@ -27,9 +27,18 @@ urlpatterns = [
     path('boostnow-profile-forms/<int:pk>/', BoostnowProfileFormDetail.as_view(), name='boostnow-profile-form-detail'),
     path('advanced-job-searches/', AdvancedJobSearchList.as_view(), name='advanced-job-search-list'),
     path('advanced-job-searches/<int:pk>/', AdvancedJobSearchDetail.as_view(), name='advanced-job-search-detail'),
+
+
+
+    path('advanced-job/', AdvancedsJobSearchAPIView.as_view(), name='advanced-job-search-list'),
+    # path('advanced-job-searches/<int:pk>/', AdvancedsJobSearchAPIView.as_view(), name='advanced-job-search-detail'),
+    
     
     path('jobs/', JobListCreateAPIView.as_view(), name='job-list-create'),
     path('jobs/<int:pk>/', JobDetailAPIView.as_view(), name='job-detail'),
+    # path('jobapply/', JobApplyView.as_view(), name='jobapply'), # fetch job apply data jobseeker
+    path('jobapply/<int:id>/', JobApplyView.as_view(), name='jobapply'),
+    
     
     path('blogs/', BlogListCreateAPIView.as_view(), name='blog-list-create'),
     path('blogs/<int:pk>/', BlogDetailAPIView.as_view(), name='blog-detail'),
