@@ -1007,12 +1007,29 @@ class OTPPasswordResetAPIView(APIView):
 ################  update password of employer 
 
 
-class ChangePasswordAPIView(APIView):
-    def post(self, request):
-        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            return Response({'detail': 'Password changed successfully.'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):   
+    def post(self, request,id=None):
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        confirm_new_password = request.data.get('confirm_new_password')
+        if not current_password or not new_password or not confirm_new_password:
+            return Response({'error': 'All fields are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        user  = get_object_or_404(CustomUser, id=id)  
+        if not user.check_password(current_password):
+            return Response({'error': 'Current password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+        if new_password != confirm_new_password:
+            return Response({'error': 'New password and confirm password do not match.'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(new_password) < 8:
+            return Response({'error': 'New password must be at least 8 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password has been changed successfully.'}, status=status.HTTP_200_OK)
+
+
+
+        
 # ************************************************************************************************ 
 import random
 import math

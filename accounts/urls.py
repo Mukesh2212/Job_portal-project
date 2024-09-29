@@ -73,7 +73,7 @@ urlpatterns = [
     # path('loginemailusername/', LoginEmialAPIView.as_view(), name='login'),
     path('loginemailusername/', LoginEmialAPIView.as_view(), name='loginemailusername'),
     # path('loginemailusername/', LoginAPIViewEmail.as_view(), name='loginemailusername'),
-    path('updatepasswordemp/', ChangePasswordAPIView.as_view(), name='change-password'),
+    path('updatepasswordemps/<int:id>/', ChangePasswordView.as_view(), name='change-password'),
     path('restpwdemployer/', RstPwdEmployerAPIView.as_view(), name='restpwdemployer'),
 
     # path('restpwdemployerconfirm/<uidb64>/<token>/', PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),

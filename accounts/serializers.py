@@ -310,7 +310,38 @@ class OTPSerializer(serializers.ModelSerializer):
 ############## Update employer registration  password 
 
 
+# class ChangePasswordSerializer(serializers.Serializer):
+#     new_password = serializers.CharField(required=True, write_only=True)
+#     confirm_new_password = serializers.CharField(required=True, write_only=True)
+
+#     def validate(self, data):
+#         new_password = data.get('new_password')
+#         confirm_new_password = data.get('confirm_new_password')
+#         if new_password != confirm_new_password:
+#             raise serializers.ValidationError("New password and confirm password do not match.")
+#         if len(new_password) < 8:
+#             raise serializers.ValidationError("New password must be at least 8 characters long.")        
+#         return data
+
+#     def save(self,request):
+#         user = EmployerRegistration.objects.get(email=request.data['email'])
+#         try:
+#             employer = user.email
+#         except EmployerRegistration.DoesNotExist:
+#             raise serializers.ValidationError("Employer registration not found for this user.")
+#         if not user.is_authenticated:
+#             raise serializers.ValidationError("User must be authenticated to change password.")
+#         new_password = self.validated_data['new_password']
+#         user.set_password(new_password)
+#         user.save()
+#         return employer 
+    
+
+
+
+
 class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=True, write_only=True)
     confirm_new_password = serializers.CharField(required=True, write_only=True)
 
@@ -320,21 +351,23 @@ class ChangePasswordSerializer(serializers.Serializer):
         if new_password != confirm_new_password:
             raise serializers.ValidationError("New password and confirm password do not match.")
         if len(new_password) < 8:
-            raise serializers.ValidationError("New password must be at least 8 characters long.")        
+            raise serializers.ValidationError("New password must be at least 8 characters long.")
         return data
 
-    def save(self,request):
+    def save(self, request):
         user = EmployerRegistration.objects.get(email=request.data['email'])
-        try:
-            employer = user.email
-        except EmployerRegistration.DoesNotExist:
-            raise serializers.ValidationError("Employer registration not found for this user.")
+        print(user,'************%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
         if not user.is_authenticated:
             raise serializers.ValidationError("User must be authenticated to change password.")
+        current_password = self.validated_data['current_password']
+        print(current_password,'**************************')
+        # Check if the current password is correct
+        if not authenticate(username=user.email, password=current_password):
+            raise serializers.ValidationError("Current password is incorrect.")
         new_password = self.validated_data['new_password']
         user.set_password(new_password)
         user.save()
-        return employer
+        return user.email  # Return the email or any other relevant information
 
 
 ###########  reset password of employer registration 
