@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <form id="payment-form" method="post">
+        {% csrf_token %}
+        <input type="text" name="amount" placeholder="Enter amount" required>
+        <button type="submit">Pay</button>
+    </form>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        const csrfToken = getCookie('csrftoken'); // Get the CSRF token from the cookie
+    
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+    
+            fetch('http://127.0.0.1:8000/paymentapi/payment/', {  // Updated URL
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken, // Include CSRF token
+                },
+                body: new URLSearchParams(new FormData(form)),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    var options = {
+                        key: "{{ RAZORPAY_KEY_ID }}", // Your Razorpay Key ID
+                        order_id: data.id,
+                        handler: function (response) {
+                            alert("Payment Successful!");
+                        },
+                        prefill: {
+                            name: "Your Name",
+                            email: "your.email@example.com",
+                        },
+                    };
+                    var rzp = new Razorpay(options);
+                    rzp.open();
+                } else {
+                    alert("Error creating order.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+    
+</body>
+</html>
