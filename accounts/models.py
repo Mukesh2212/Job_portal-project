@@ -418,3 +418,5 @@ class ChatMessage(models.Model):
 class CompanyReview(models.Model):
     rating = models.CharField(max_length=10,null=False, blank=False)
     description = models.TextField(null=False, blank=False)    
+
+# this is comment line
